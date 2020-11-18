@@ -174,7 +174,7 @@ S_northing = gam_setup$smooth[[4]]$S[[1]]
 S_RSF = gam_setup$smooth[[5]]$S[[1]]
 
 S_list = list(S_dist_land,S_sea_ice,S_easting,S_northing,S_RSF) 
-S_combined = .bdiag(S_list)         # join S's in sparse matrix
+S_combined = Matrix::bdiag(S_list)         # join S's in sparse matrix
 Sdims = unlist(lapply(S_list,nrow)) # Find dimension of each S
 
 #For report, used for constructing plots----
@@ -201,7 +201,6 @@ compile(paste0(TmbFile,".cpp"),"-O1 -g",DLLFLAGS="")
 
 grid_df = st_drop_geometry(grid)
 loc_s = data.frame(x=grid_df[,"easting"],y=grid_df[,"northing"])
-mesh = inla.mesh.create( loc_s )
 P_i = as.numeric(Area_table[,"Area_m2"]/st_area(grid[1,]))
 A_s = 1-grid_df[,"land_cover"]
 # 
@@ -211,8 +210,6 @@ P_i_ru = as.numeric(1.2*KM_i_ru/st_area(grid[1,]))*1000000
 
 a_photo_us = 0.012  
 
-
-# # Data combined US and RUS
 Output = matrix(0,3,14)  
 Lambda_s = matrix(0,n_st,3)
 Z_s = matrix(0,n_st,3)
@@ -221,13 +218,13 @@ Output = data.frame(Output)
 counter = 1
 
 Options_vec = c("SE"=0,"Tracks"=0,"RE"=0)
-Xc_s = as.matrix(bdiag(gam_setup$X[,-1])) 
+Xc_s = as.matrix(Matrix::bdiag(gam_setup$X[,-1])) 
 
-
+# Data combined US and RUS
 Data = list( "Options_vec"=Options_vec, "N_i"=N_i,"T_i"=T_i,"C_i"=C_i,"U_i"=U_i,"P_i"=P_i,"A_s"=A_s,"S_i"=S_i-1,"Y_s"=Y_s, "G_min1"=G-1,"T_i_ru"=T_i_ru,"C_i_ru"=C_i_ru,"U_i_ru"=U_i_ru,"P_i_ru"=P_i_ru,"S_i_ru"=S_i_ru-1,"KM_i_ru"=KM_i_ru, "Xt_s"=Xt_s,"Xc_s"=Xc_s,"ho_n"=23,"ho_c"=16,"a_photo_us"=a_photo_us)
 Data$S = S_combined
 Data$Sdims = Sdims
-Data$designMatrixForReport = .bdiag(designMatrixForReport)
+Data$designMatrixForReport = Matrix::bdiag(designMatrixForReport)
 Data$I_water = I_water
 Data$I_us = I_us
 Data$I_regehr = I_regehr
@@ -384,7 +381,7 @@ IceTracks[[6]]=plot_N_map_sf(N=Z,Grid=Grid_list[[1]],leg.title="Tracks")
 
 Abund = vector("list",3)
 plot_t = 1
-Lambda_s=Report$Lambda_s*group_size
+Lambda_s=Report$Lambda_s*Report$group_size
 N = Lambda_s[c(1:n_cells)+n_cells*(plot_t-1)] 
 Abund[[1]]=plot_N_map_sf(N=N,Grid=Grid_list[[1]],leg.title=expression(hat(N)["s,t"]),limits=c(0,10))
 Abund[[1]]=Abund[[1]]+scale_fill_viridis_c(limits = c(0,20), breaks = c(0, 5, 10, 15,20),values=c(0,.05,.1,.4,1))
@@ -421,16 +418,6 @@ bplot = ggplot()+geom_line(data=Plot.df,aes(x=x,y=Smooth))+
 pdf('pb_spatial_smooths.pdf')
 bplot
 dev.off()
-
-
-
-
-for(it in 1:55){
-  N= Lambda_s[c(1:n_cells)+n_cells*(it-1),] 
-  N_avg = as.vector(N %*% Weights)
-  Grid_list[[it]]$N = N_avg * mean(G)
-}
-save(Grid_list,file="Grid_list_with_N_pb.RData")
 
 
 
