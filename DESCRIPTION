@@ -1,8 +1,8 @@
 Package: ChukchiPolarBear
 Type: Package
 Title: Chukchi polar bear analysis
-Version: 0.1
-Date: 2020-05-10
+Version: 0.3
+Date: 2021-04-21
 Author: Paul B. Conn, Irina S. Trukhanova
 Maintainer: Paul B. Conn <paul.conn@noaa.gov>
 Description: Conducts analysis of polar bear count data with maximum marginal likelihood via the TMB package.  There is also a script 
@@ -10,7 +10,7 @@ Description: Conducts analysis of polar bear count data with maximum marginal li
 License: GNU GENERAL PUBLIC LICENSE, Version 2
 LinkingTo: TMB, RcppEigen
 Depends:
-    TMB (>= 1.7.15),
+    TMB (>= 1.7.18),
     sf,
     rgeos,
     ggplot2,

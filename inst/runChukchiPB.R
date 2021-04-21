@@ -19,12 +19,14 @@ d1<-strptime(pb_ru$Time_date, format="%m/%d/%Y %H:%M", tz = "Asia/Anadyr")
 pb_ru$correct_dt <- as.POSIXct(d1, tz="Asia/Anadyr")  
 attributes(pb_ru$correct_dt)$tzone <- "US/Alaska" 
 
-I_us = I_regehr = I_PBSG = rep(0,1354)
+I_us = I_regehr = I_PBSG = I_72 = rep(0,1354)
 I_us[I_US]=1
 Regehr_study_area = st_transform(Regehr_study_area,crs=st_crs(grid))
 PBSG = st_transform(PBSG,area,crs=st_crs(grid))
 I_regehr = 1*(is.na(as.numeric(st_within(st_centroid(grid),Regehr_study_area)))==FALSE)
 I_PBSG = 1*(is.na(as.numeric(st_within(st_centroid(grid),PBSG)))==FALSE)
+Centroids = st_transform(st_centroid(grid),4326)
+I_72 = as.numeric(st_coordinates(Centroids)[,2]<72)
 
 #function to drop the geometry of an st object (easier to work w/ the data.frame)
 st_drop_geometry <- function(x) {
@@ -143,6 +145,7 @@ Sea_ice = I_water = rep(0,n_st)
 for(it in 1:t_steps){
   Sea_ice[n_cells*(it-1)+c(1:n_cells)]=st_drop_geometry(Grid_list[[it]])[,"sea_ice"]
   I_water[n_cells*(it-1)+c(1:n_cells)]=(Sea_ice[n_cells*(it-1)+c(1:n_cells)]<0.01)
+  RSF[n_cells*(it-1)+c(1:n_cells)]=st_drop_geometry(Grid_list[[it]])[,"rsf"]
 }
 Coords = st_coordinates(st_centroid(grid))
 Coords = t(t(Coords)/colMeans(Coords))
@@ -383,17 +386,17 @@ Abund = vector("list",3)
 plot_t = 1
 Lambda_s=Report$Lambda_s*Report$group_size
 N = Lambda_s[c(1:n_cells)+n_cells*(plot_t-1)] 
-Abund[[1]]=plot_N_map_sf(N=N,Grid=Grid_list[[1]],leg.title=expression(hat(N)["s,t"]),limits=c(0,10))
-Abund[[1]]=Abund[[1]]+scale_fill_viridis_c(limits = c(0,20), breaks = c(0, 5, 10, 15,20),values=c(0,.05,.1,.4,1))
+Abund[[1]]=plot_N_map_sf(N=N,Grid=Grid_list[[1]],leg.title=expression(hat(N)["s,t"]*"*"),limits=c(0,10))
+Abund[[1]]=Abund[[1]]+scale_fill_viridis_c(name=expression(hat(N)["s,t"]*"*"),limits = c(0,20), breaks = c(0, 5, 10, 15,20),values=c(0,.05,.1,.4,1))
 plot_t = 28
 N = Lambda_s[c(1:n_cells)+n_cells*(plot_t-1)] 
-Abund[[2]]=plot_N_map_sf(N=N,Grid=Grid_list[[1]],leg.title=expression(hat(N)["s,t"]),limits=c(0,10))
-Abund[[2]]=Abund[[2]]+scale_fill_viridis_c(limits = c(0,20), breaks = c(0, 5, 10, 15,20),values=c(0,.05,.1,.4,1))
+Abund[[2]]=plot_N_map_sf(N=N,Grid=Grid_list[[1]],leg.title=expression(hat(N)["s,t"]*"*"),limits=c(0,10))
+Abund[[2]]=Abund[[2]]+scale_fill_viridis_c(name=expression(hat(N)["s,t"]*"*"),limits = c(0,20), breaks = c(0, 5, 10, 15,20),values=c(0,.05,.1,.4,1))
 
 plot_t = 55
 N = Lambda_s[c(1:n_cells)+n_cells*(plot_t-1)] 
-Abund[[3]]=plot_N_map_sf(N=N,Grid=Grid_list[[1]],leg.title=expression(hat(N)["s,t"]),limits=c(0,10))
-Abund[[3]]=Abund[[3]]+scale_fill_viridis_c(limits = c(0,20), breaks = c(0, 5, 10, 15,20),values=c(0,.05,.1,.4,1))
+Abund[[3]]=plot_N_map_sf(N=N,Grid=Grid_list[[1]],leg.title=expression(hat(N)["s,t"]*"*"),limits=c(0,10))
+Abund[[3]]=Abund[[3]]+scale_fill_viridis_c(name=expression(hat(N)["s,t"]*"*"),limits = c(0,20), breaks = c(0, 5, 10, 15,20),values=c(0,.05,.1,.4,1))
 
 pdf("IceTracksAbund_spatial.pdf")
 grid.arrange(arrangeGrob(IceTracks[[1]],IceTracks[[2]],IceTracks[[3]],IceTracks[[4]],IceTracks[[5]],IceTracks[[6]],Abund[[1]],Abund[[2]],Abund[[3]],nrow=3))
